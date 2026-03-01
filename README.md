@@ -24,6 +24,7 @@ SmartFix differentiates between fraudulent entries and accidental typo. If an ad
 **B2B Intelligence**: Instantly detect role-based accounts (info@, admin@)<br>
 
 **High-Availability DNS**: Using multi-provider DNS-over-HTTPS strategy  to ensure MX lookups are performed with 99.9% reliability, even if one provider experiences downtime.
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ###  Key Features
 * **Syntax Check:** Fast-fail regex check to filter out malformed strings before they hit your database
