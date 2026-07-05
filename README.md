@@ -28,14 +28,6 @@ Requests without a valid secret return `401 Unauthorized`.
 
 ## Endpoints
 
-### `GET /ping`
-
-Health check. No authentication required.
-
-**Response**
-```json
-{ "status": "ok", "service": "SmartFix Email Edge" }
-```
 
 ---
 
