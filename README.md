@@ -9,7 +9,7 @@ Built for developers who need low-latency validation for client-side forms and s
 
 # SmartFix Email Validation API
 
-Fast, edge-deployed email validation. Checks syntax, MX records, disposable domains, typos, and role-based accounts in a single request — typically under 200ms.
+Fast, edge-deployed email validation. Checks syntax, MX records, disposable domains, typos, and role-based accounts in a single request 
 
 
 ---
