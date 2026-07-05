@@ -6,34 +6,173 @@ Built for developers who need low-latency validation for client-side forms and s
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-###  Why SmartFix?
-**Smart Conversion Logic** : <br>
-SmartFix differentiates between fraudulent entries and accidental typo. If an address has a typo  but the domain is technically active. The system provide a suspect_typo flag and a did_you_mean suggestion.<br>
 
-**You Hold the Key**: Since the domain is valid and not a disposable provider, we give you the flexibility to accept the lead or prompt the user for a real-time correction. <br>
+# SmartFix Email Validation API
 
-**Hygiene vs. Conversion**: You choose the balance. Whether you want a strict accepts or a frictionless signup, we provide the metadata to power your logic. <br>
+Fast, edge-deployed email validation. Checks syntax, MX records, disposable domains, typos, and role-based accounts in a single request — typically under 200ms.
 
-**Stop Ghost Lead**s: Automatically reject disposable/burner emails (like Mailinator) that ruin your sender reputation and inflate your marketing costs.<br>
 
-**Reliable Disposable Detection**: SmartFix leverages a constantly synchronized and highly curated engine to identify temporary domains. By intercepting even the most recent burner providers, we ensure your lead quality remains uncompromised and your deliverability stays peak
+---
 
-**Edge Performance**: Powered by Cloudflare, processing requests at the server closest to your user for zero-lag integration.
+## Authentication
 
-**B2B Intelligence**: Instantly detect role-based accounts (info@, admin@)<br>
+Every request (except `/ping`) must include this header:
 
-**High-Availability DNS**: Using multi-provider DNS-over-HTTPS strategy  to ensure MX lookups are performed with 99.9% reliability, even if one provider experiences downtime.
+| Header | Value |
+|---|---|
+| `X-RapidAPI-Proxy-Secret` | Your API secret, provided on subscription |
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-###  Key Features
-* **Syntax Check:** Fast-fail regex check to filter out malformed strings before they hit your database
-* **Typo Correction:** Advanced algorithm to catch "fat-finger" errors (e.g., `gmil.com` → `gmail.com`).
-* **MX Record Lookup:** Real-time verification via DNS-over-HTTPS  to ensure the domain can receive mail.
-* **Disposable & Burner Shield:** Automatically blocks temporary email providers using a dynamically updated global list <br>
- Bi-Hourly Intelligence Sync:  The system syncs with global databases every 2 hours  to catch desposable domains and stealth burner domains. <br>
-* **Role Detection (B2B):** Identifies generic accounts like `info@`, `admin@`, or `sales@` for better lead qualification..
-* **Confidence Scoring:** Returns a 0-100 score based on multiple signals, allowing you to set your own threshold for user registration. <br>
-* **Freemail Identification**: Detects if the address belongs to a major free provider (Gmail, Outlook, Yahoo, iCloud, etc.), helping you distinguish between personal and professional leads.
-* **Parallel Bulk Processing**: Validate up to 50 email addresses in a single request. The system uses an asynchronous parallel engine, delivering results nearly as fast as a single validation
-* **Instant Single Validation** : Ideal for client-side forms and real-time verification
-* **Subdomain Detection**: Extracts the root domain from any subdomain to accurately catch and flag temporary/disposable emails.
+Requests without a valid secret return `401 Unauthorized`.
+
+---
+
+## Endpoints
+
+### `GET /ping`
+
+Health check. No authentication required.
+
+**Response**
+```json
+{ "status": "ok", "service": "SmartFix Email Edge" }
+```
+
+---
+
+### `POST /validate`
+
+Validates a single email address.
+
+**Request body**
+```json
+{ "email": "jhon@gmial.com" }
+```
+
+**Response**
+```json
+{
+  "email": "jhon@gmial.com",
+  "valid": false,
+  "score": 40,
+  "risk_level": "medium",
+  "reason": "suspect_typo",
+  "message": "Double check this address, it might contain a typo. Did you mean jhon@gmail.com?",
+  "did_you_mean": "jhon@gmail.com",
+  "details": {
+    "syntax_valid": true,
+    "mx_valid": true,
+    "is_disposable": false,
+    "is_freemail": false,
+    "is_suspicious": true,
+    "is_role_account": false
+  },
+  "execution_time_ms": 143
+}
+```
+
+---
+
+### `POST /validate-bulk`
+
+Validates up to **100 email addresses** in a single call. Ideal for cleaning an existing contact list before a campaign.
+
+**Request body**
+```json
+{
+  "emails": ["user1@gmail.com", "test@mailinator.com", "jhon@gmial.com"]
+}
+```
+
+**Response**
+```json
+{
+  "summary": {
+    "total": 3,
+    "valid": 1,
+    "invalid": 2,
+    "disposable": 1,
+    "suspicious_typo": 1
+  },
+  "results": [ /* one object per email, same shape as /validate */ ]
+}
+```
+
+---
+
+## Response fields explained
+
+| Field | Type | Meaning |
+|---|---|---|
+| `email` | string | The address that was checked (trimmed, lowercased) |
+| `valid` | boolean | Strict technical verdict: the domain can receive mail **and** it's not a disposable address |
+| `score` | number (0–100) | Confidence score. Higher is better |
+| `risk_level` | string | `low` (score ≥ 70), `medium` (40–69), `high` (< 40) — use this for quick decisioning without reading the raw score |
+| `reason` | string | Machine-readable code explaining the verdict (see table below) |
+| `message` | string | Human-readable message, ready to display directly in your signup/checkout form |
+| `did_you_mean` | string or null | Suggested correction if a likely typo was detected, otherwise `null` |
+| `details.syntax_valid` | boolean | Passes RFC-style format validation |
+| `details.mx_valid` | boolean | The domain has valid mail servers (MX records) |
+| `details.is_disposable` | boolean | Known temporary/throwaway email provider (e.g. Mailinator, Guerrilla Mail) |
+| `details.is_freemail` | boolean | Well-known free consumer provider (Gmail, Yahoo, Outlook, etc.) |
+| `details.is_suspicious` | boolean | A likely typo was detected in the domain |
+| `details.is_role_account` | boolean | Generic business mailbox (`info@`, `support@`, `admin@`, etc.) rather than a personal one |
+| `execution_time_ms` | number | Server-side processing time for this request |
+
+### Reason codes
+
+| Code | Meaning |
+|---|---|
+| `accept` | Clean, valid address |
+| `accept_role_account` | Valid, but it's a generic business address, not a personal one |
+| `suspect_typo` | Domain looks like a typo of a well-known provider |
+| `reject_format` | Doesn't follow valid email syntax |
+| `reject_too_long` | Exceeds the maximum allowed length (254 characters total, 64 for the part before `@`) |
+| `reject_invalid_domain` | Domain has no valid mail servers |
+| `reject_disposable` | Known disposable/temporary email provider |
+
+---
+
+## What this API does *not* do
+
+To set expectations clearly: this API checks that a domain **can receive mail** (MX + disposable + typo detection). It does **not** perform a live SMTP handshake to confirm that one specific mailbox exists — this keeps every check fast, cheap, and free of the false positives that greylisting and catch-all domains cause on "deep verification" tools. For most signup-form and list-cleaning use cases, this is the check that actually reduces bounce rates in practice, since mistyped domains are the single largest cause of failed delivery.
+
+---
+
+## Rate limits
+
+| Limit | Value |
+|---|---|
+| Requests per IP | 30 per minute |
+| Emails per bulk request | 100 max |
+
+Exceeding the limit returns `429 Too Many Requests`.
+
+---
+
+## Error responses
+
+| Status | Meaning |
+|---|---|
+| `400` | Malformed JSON, or missing/invalid `email`/`emails` field |
+| `401` | Missing or invalid `X-RapidAPI-Proxy-Secret` header |
+| `404` | Unknown endpoint |
+| `429` | Rate limit exceeded |
+| `500` | Unexpected server error |
+
+---
+
+## Quick start (curl)
+
+```bash
+curl -X POST https://your-worker-domain.workers.dev/validate \
+  -H "Content-Type: application/json" \
+  -H "X-RapidAPI-Proxy-Secret: YOUR_SECRET" \
+  -d '{"email": "someone@example.com"}'
+```
+
+```bash
+curl -X POST https://your-worker-domain.workers.dev/validate-bulk \
+  -H "Content-Type: application/json" \
+  -H "X-RapidAPI-Proxy-Secret: YOUR_SECRET" \
+  -d '{"emails": ["a@gmail.com", "b@mailinator.com"]}'
+```
