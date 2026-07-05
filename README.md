@@ -1,4 +1,4 @@
-  Get it and read more on RapidAPI! https://rapidapi.com/christiandamato487/api/smartfix-email-edge
+  Get it on RapidAPI! https://rapidapi.com/christiandamato487/api/smartfix-email-edge
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
