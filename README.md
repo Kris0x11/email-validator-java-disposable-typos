@@ -12,7 +12,6 @@ Fast, edge-deployed email validation. Checks syntax, MX records, disposable doma
 
 ## Authentication
 
-Every request (except `/ping`) must include this header:
 
 | Header | Value |
 |---|---|
