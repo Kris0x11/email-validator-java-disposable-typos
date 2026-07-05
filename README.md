@@ -98,7 +98,7 @@ Validates up to **100 email addresses** in a single call. Ideal for cleaning an 
 | `email` | string | The address that was checked (trimmed, lowercased) |
 | `valid` | boolean | Strict technical verdict: the domain can receive mail **and** it's not a disposable address |
 | `score` | number (0–100) | Confidence score. Higher is better |
-| `risk_level` | string | `low` (score ≥ 70), `medium` (40–69), `high` (< 40) — use this for quick decisioning without reading the raw score |
+| `risk_level` | string | `low` (score ≥ 70), `medium` (40–69), `high` (< 40)  |
 | `reason` | string | Machine-readable code explaining the verdict (see table below) |
 | `message` | string | Human-readable message, ready to display directly in your signup/checkout form |
 | `did_you_mean` | string or null | Suggested correction if a likely typo was detected, otherwise `null` |
