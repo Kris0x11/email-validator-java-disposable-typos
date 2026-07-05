@@ -2,7 +2,7 @@
 Email Validator for SmartFix API. Detect disposable mail,subdomain, fix typos and verify MX.  Get it and read more on RapidAPI! https://rapidapi.com/christiandamato487/api/smartfix-email-edge
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 A high-performance email verification API running on the Cloudflare Global Edge Network. SmartFix validates adresses via live DNS/MX checks, flagging disposable "burner" emails (even those hiding behind subdomains), and suggesting real-time typo corrections.
-Built for developers who need low-latency validation for client-side forms and scalable parallel processing (up to 50 emails per request) for backend bulk cleaning.
+
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
