@@ -61,7 +61,7 @@ Validates a single email address.
 
 ### `POST /validate-bulk`
 
-Validates up to **100 email addresses** in a single call. Ideal for cleaning an existing contact list before a campaign.
+Validates up to **100 email addresses** in a single call.
 
 **Request body**
 ```json
@@ -95,7 +95,7 @@ Validates up to **100 email addresses** in a single call. Ideal for cleaning an 
 | `score` | number (0–100) | Confidence score. Higher is better |
 | `risk_level` | string | `low` (score ≥ 70), `medium` (40–69), `high` (< 40)  |
 | `reason` | string | Machine-readable code explaining the verdict (see table below) |
-| `message` | string | Human-readable message, ready to display directly in your signup/checkout form |
+| `message` | string | Human-readable message|
 | `did_you_mean` | string or null | Suggested correction if a likely typo was detected, otherwise `null` |
 | `details.syntax_valid` | boolean | Passes RFC-style format validation |
 | `details.mx_valid` | boolean | The domain has valid mail servers (MX records) |
@@ -110,10 +110,10 @@ Validates up to **100 email addresses** in a single call. Ideal for cleaning an 
 | Code | Meaning |
 |---|---|
 | `accept` | Clean, valid address |
-| `accept_role_account` | Valid, but it's a generic business address, not a personal one |
+| `accept_role_account` | Valid, but it's a generic business address |
 | `suspect_typo` | Domain looks like a typo of a well-known provider |
 | `reject_format` | Doesn't follow valid email syntax |
-| `reject_too_long` | Exceeds the maximum allowed length (254 characters total, 64 for the part before `@`) |
+| `reject_too_long` | Exceeds the maximum allowed length  |
 | `reject_invalid_domain` | Domain has no valid mail servers |
 | `reject_disposable` | Known disposable/temporary email provider |
 
